@@ -1,0 +1,56 @@
+name: Build, test and audit
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: PyO3/maturin-action@v1
+      with:
+        command: build
+        args: --release --sdist -o dist --find-interpreter
+        sccache: 'true'
+        manylinux: auto
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v4
+      with:
+        name: wheels-${{ matrix.os }}
+        path: dist
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - uses: PyO3/maturin-action@v1
+      with:
+        command: build
+        args: --release -o dist
+    - name: Install wheel
+      run: pip install dist/*.whl
+    - name: Install pytest
+      run: pip install pytest
+    - name: Run tests
+      run: pytest
+
+  security_audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run audit
+        uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

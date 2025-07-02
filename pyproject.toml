@@ -1,0 +1,32 @@
+[build-system]
+requires = ["maturin>=1.9,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "guessing-game"
+version = "0.1.0"
+description = "A simple guessing game library written in Rust and exposed to Python."
+authors = [{ name = "Brent" }]
+license = { file = "LICENSE-MIT" }
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Rust",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Repository = "https://github.com/BrentWilkins/guessing-game"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.maturin]
+# "extension-module" tells pyo3 we want to build an extension module (skips linking against libpython.so)
+features = ["pyo3/extension-module"]
+# Optimize for smaller wheel size
+strip = true
