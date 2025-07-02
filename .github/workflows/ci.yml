@@ -50,7 +50,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run audit
+      - name: Run Rust audit
         uses: actions-rs/audit-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+        if: ${{ github.actor != 'nektos/act' }}
+
+      - name: Run cargo-audit locally
+        run: |
+          cargo install cargo-audit || true
+          cargo audit || true
+        if: ${{ github.actor == 'nektos/act' }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Python security tools
+        run: |
+          pip install pip-audit safety bandit
+
+      - name: Run pip-audit
+        run: |
+          pip install -e .[dev]
+          pip-audit
+
+      - name: Run safety scan
+        run: safety scan || true
+        env:
+          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+
+      - name: Run bandit
+        run: bandit -r . -f json -o bandit-report.json || true

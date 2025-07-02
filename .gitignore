@@ -11,6 +11,7 @@ __pycache__/
 dist/
 build/
 *.whl
+.tox/
 
 # IDE
 .vscode/
@@ -21,3 +22,5 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+.secrets
